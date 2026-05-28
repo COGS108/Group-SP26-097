@@ -190,3 +190,4 @@ data/*.SQ*
 data/*/*.SQ*
 
 modules/eda_notebooks/results
+modules/eda_notebooks/data
