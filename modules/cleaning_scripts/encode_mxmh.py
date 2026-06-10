@@ -1,10 +1,3 @@
-"""
-Encode categorical variables in the cleaned MxMH Survey dataset.
-
-This script performs one-hot encoding on nominal categorical variables 
-and ordinal encoding on frequency-based variables.
-"""
-
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder, OneHotEncoder
 from pathlib import Path
@@ -35,22 +28,6 @@ def ordinal_encode_frequencies(df):
 def one_hot_encode_categorical(df, categorical_cols, drop_first=True):
     """
     One-hot encode nominal categorical variables.
-    
-    Parameters:
-    -----------
-    df : pd.DataFrame
-        The input dataframe.
-    categorical_cols : list
-        List of column names to one-hot encode.
-    drop_first : bool, default=True
-        Whether to drop the first category to avoid multicollinearity.
-    
-    Returns:
-    --------
-    df_encoded : pd.DataFrame
-        DataFrame with one-hot encoded columns.
-    encoder : OneHotEncoder
-        The fitted encoder for future use.
     """
     encoder = OneHotEncoder(sparse_output=False, drop="first" if drop_first else None)
     encoded_array = encoder.fit_transform(df[categorical_cols])
@@ -80,25 +57,13 @@ def label_encode_binary(df, binary_cols):
     return df, binary_map
 
 
-def encode_mxmh_survey(input_path, output_path, output_mapping_path=None):
+def encode_mxmh(
+        input_path = "data/01-interim/MxMH_Survey_cleaned.csv", 
+        output_path = "data/02-processed/MxMH_Survey_encoded.csv", 
+        output_mapping_path= "data/02-processed/encoding_mappings.json"
+    ):
     """
     Load cleaned survey data and apply categorical encoding.
-    
-    Parameters:
-    -----------
-    input_path : str
-        Path to cleaned CSV file.
-    output_path : str
-        Path to save encoded CSV file.
-    output_mapping_path : str, optional
-        Path to save encoding mappings as JSON.
-    
-    Returns:
-    --------
-    df_encoded : pd.DataFrame
-        The encoded dataframe.
-    mappings : dict
-        Dictionary containing all encoding mappings.
     """
     df = pd.read_csv(input_path)
     print(f"Loaded data: {df.shape[0]} rows, {df.shape[1]} columns")
@@ -121,9 +86,7 @@ def encode_mxmh_survey(input_path, output_path, output_mapping_path=None):
     cols_to_drop = ["Timestamp", "Permissions", "Foreign languages"]
     cols_to_drop = [col for col in cols_to_drop if col in df_encoded.columns]
     df_encoded = df_encoded.drop(columns=cols_to_drop)
-    
-    print(f"Final encoded data: {df_encoded.shape[0]} rows, {df_encoded.shape[1]} columns")
-    
+        
     # Save encoded data
     output_path = Path(output_path)
     output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -144,13 +107,11 @@ def encode_mxmh_survey(input_path, output_path, output_mapping_path=None):
             json.dump(mappings, f, indent=2)
         print(f"Saved encoding mappings to {output_mapping_path}")
     
-    return df_encoded, mappings
-
 
 if __name__ == "__main__":
-    input_file = "data/01-interim/MxMH_Survey_cleaned.csv"
-    output_file = "data/02-processed/MxMH_Survey_encoded.csv"
-    mapping_file = "data/02-processed/encoding_mappings.json"
+    input_file = "../../data/01-interim/MxMH_Survey_cleaned.csv"
+    output_file = "../../data/02-processed/MxMH_Survey_encoded.csv"
+    mapping_file = "../../data/02-processed/encoding_mappings.json"
     
-    df_encoded, mappings = encode_mxmh_survey(input_file, output_file, mapping_file)
+    encode_mxmh(input_file, output_file, mapping_file)
     print("\nEncoding complete!")
